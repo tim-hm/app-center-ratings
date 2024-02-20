@@ -1,41 +1,52 @@
 name: Build and test
 
 on:
+  workflow_dispatch:
   workflow_call:
 
 jobs:
   build:
-    name: Build Ratings
+    name: Build ratings
     runs-on: ubuntu-22.04
     steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev pkg-config protobuf-compiler libprotobuf-dev
+
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Rust toolchain
+      - name: Setup rust toolchain
         uses: actions-rs/toolchain@v1
-        with:
-          toolchain: 1.76.0
-          components: clippy, rustfmt
+        with: # seems to ignore rust-toolchain but it should be supported
+          toolchain: "1.76.0"
+          components: rustfmt, clippy
 
-      - name: Install additional build dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libssl-dev pkg-config protobuf-compiler
-      - name: Check code format
+      - name: Check code formatting
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --check
 
-      - name: Lint code
+      - name: Run code linter
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
 
-      - name: Setup and Run Tests
+      - name: Security audit dependencies
+        uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run tests
         run: |
           cp example.env .env
           cargo install cargo-make
           cargo make db-up
           cargo make full-test
+
+      - name: Build release binary
+        run: |
+          cargo build --release
