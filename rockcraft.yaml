@@ -8,17 +8,19 @@ platforms:
   amd64:
 
 summary: App Center Ratings Service
-description: |
-  App ratings service Ubuntu App Center.
+description: App ratings service Ubuntu App Center.
 
-run_user: _daemon_
+#run-user: _daemon_
 
 environment:
   APP_ENV: dev
   APP_HOST: 0.0.0.0
+  APP_JWT_SECRET: unset
   APP_LOG_LEVEL: info
   APP_NAME: ratings
-  APP_PORT: 18080
+  APP_PORT: "8080"
+  APP_POSTGRES_URI: unset
+  APP_MIGRATION_POSTGRES_URI: unset
 
 services:
   ratings:
@@ -30,7 +32,7 @@ parts:
   rust-dependencies:
     plugin: nil
     override-pull: |
-      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain 1.76.0
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
   ratings:
     after: [ rust-dependencies ]
@@ -39,6 +41,7 @@ parts:
       - libssl-dev
       - pkg-config
       - protobuf-compiler
+      - libprotobuf-dev
     source: .
     stage-packages:
       - libc6_libs
