@@ -3,13 +3,13 @@ version: 0.0.4
 license: GPL-3.0
 
 base: bare
-build_base: ubuntu:22.04
+build-base: ubuntu@22.04
 platforms:
   amd64:
 
-summary: Ubuntu App Ratings Service
+summary: App Center Ratings Service
 description: |
-  Backend service to support application ratings in the new Ubuntu Software Centre.
+  App ratings service Ubuntu App Center.
 
 run_user: _daemon_
 
@@ -30,7 +30,7 @@ parts:
   rust-dependencies:
     plugin: nil
     override-pull: |
-      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain 1.76.0
 
   ratings:
     after: [ rust-dependencies ]
@@ -38,8 +38,7 @@ parts:
     build-packages:
       - libssl-dev
       - pkg-config
-    build-snaps:
-      - protobuf
+      - protobuf-compiler
     source: .
     stage-packages:
       - libc6_libs
